@@ -1,0 +1,126 @@
+= Tooling - Model for AsciiDoc
+:Notice: Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the NOTICE file distributed with this work for additional information regarding copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at. http://www.apache.org/licenses/LICENSE-2.0 . Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR  CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+Allows for programmatic generation of ascii-doc representing document models.
+
+NOTE: The _AsciiDoc_ name is trademarked by the https://www.eclipse.org/[_Eclipse Foundation_].
+This project is *not* part of the specification effort for _AsciiDoc_ under the
+_AsciiDoc Working Group_. See https://projects.eclipse.org/proposals/asciidoc-language[]
+and https://accounts.eclipse.org/mailing-list/asciidoc-wg[]. However, we are happy to
+help with transfer of source code, if any project (under the umbrella of the
+_AsciiDoc Working Group_) is willing to take over.
+
+== Usage
+
+Say we have a list of employees, which we want to express as ascii-doc table.
+
+[source,java]
+----
+public static class Employee {
+    private int id;
+    private String firstName;
+    private String surName;
+    ...
+}
+
+List<Employee> employees = List.of(
+        new Employee(1, "Alice", "Wonder"),
+        new Employee(2, "Bob", "Uncle")
+);
+----
+
+Lets generate a _Document_ model programmatically, then print it to _System.out_.
+
+[source,java]
+----
+
+import org.apache.causeway.valuetypes.asciidoc.builder.AsciiDocWriter;
+import static org.apache.causeway.valuetypes.asciidoc.builder.AsciiDocFactory.*;
+
+...
+
+Document doc = doc();
+doc.setTitle("Hello World");
+
+Block block = block(doc);
+block.getLines().add("A simple block corresponds to a normal paragraph.");
+
+Table table = table(doc);
+table.setTitle("Employees");
+table.setAttribute("cols", "1m,3,3", true);
+table.setAttribute("header-option", "", true);
+
+Row headRow = headRow(table);
+
+cell(table, headRow, "ID");
+cell(table, headRow, "Firstname");
+cell(table, headRow, "Surname");
+
+for(Employee employee : employees) {
+
+    Row row = row(table);
+    cell(table, row, "" + employee.getId());
+    cell(table, row, employee.getFirstName());
+    cell(table, row, employee.getSurName());
+}
+
+System.out.println(AsciiDocWriter.toString(doc));
+
+----
+
+ascii-doc syntax generated:
+
+[source]
+----
+= Hello World
+
+A simple block corresponds to a normal paragraph.
+
+.Employees
+[cols="1m,3,3", options="header"]
+|===
+|ID |Firstname |Surname
+
+|1
+|Alice
+|Wonder
+
+|2
+|Bob
+|Uncle
+|===
+----
+
+which renders as
+
+==== Hello World
+
+A simple block corresponds to a normal paragraph.
+
+.Employees
+[cols="1m,3,3", options="header"]
+|===
+|ID |Firstname |Surname
+
+|1
+|Alice
+|Wonder
+
+|2
+|Bob
+|Uncle
+|===
+
+== Install
+
+Using Maven:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.apache.causeway.valuetypes</groupId>
+    <artifactId>causeway-valuetypes-asciidoc-builder</artifactId>
+</dependency>
+----
+
+

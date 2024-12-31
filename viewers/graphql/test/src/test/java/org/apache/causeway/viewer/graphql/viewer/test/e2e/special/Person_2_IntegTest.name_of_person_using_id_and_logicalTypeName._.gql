@@ -1,0 +1,9 @@
+{
+  rich {
+    university_dept_Person(object: {id: "$staffMemberId", logicalTypeName: university_dept_StaffMember}) {
+      name {
+        get
+      }
+    }
+  }
+}

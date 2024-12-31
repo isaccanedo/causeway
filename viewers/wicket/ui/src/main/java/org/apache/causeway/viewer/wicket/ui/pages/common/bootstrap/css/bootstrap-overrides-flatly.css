@@ -1,0 +1,63 @@
+/*
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
+
+/* fixate menu label color */
+.bg-primary .navbar-nav .nav-link,
+.bg-primary .navbar-nav .nav-link.active, 
+.bg-primary .navbar-nav .nav-link:focus, 
+.bg-primary .navbar-nav .nav-link:hover {
+	color: white !important;
+}
+
+.select2-container.input-sm .select2-choice,
+.input-group-sm .select2-container .select2-choice {
+    height: 33px;
+}
+
+.select2-container.select2-container-disabled .select2-choice,
+.select2-container.select2-container-disabled .select2-choices {
+    background-color: #ecf0f1;
+}
+
+header nav.navbar {
+	padding: 0.5rem 0.5rem;
+}
+header .navbar-header .navbar-brand {
+	padding-bottom: 0px;
+}
+
+.sidebar-panel :focus,
+h4.iconAndTitle a:focus,
+ul.nav-tabs li.active a:focus,
+ul.nav-tabs li a:focus,
+fieldset.inputFormTable :focus,
+li.additionalLinkItem a:focus,
+a.scalarValueInlinePromptLink:focus textarea,
+:focus {
+    outline: none;
+    border-color: rgb(24, 188, 156);
+    box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.075) inset, 0px 0px 8px rgb(24, 188, 156);
+}
+
+/* contrast fix for badges inside tables */
+td .badge.bg-light {
+  --bs-bg-opacity: 1;
+  background-color: rgba(230, 228, 226 ,var(--bs-bg-opacity)) !important;
+  color:rgb(24, 49, 83);
+}

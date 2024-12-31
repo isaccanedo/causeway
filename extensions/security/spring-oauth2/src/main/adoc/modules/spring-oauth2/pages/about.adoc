@@ -1,0 +1,420 @@
+= Spring Security OAuth2
+
+:Notice: Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the NOTICE file distributed with this work for additional information regarding copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at. http://www.apache.org/licenses/LICENSE-2.0 . Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR  CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+:page-partial:
+
+
+This guide describes the integration of Spring security's OAuth2 client.
+Authentication is done via OAuth2 and authorization via either Shiro or Secman.
+
+include::docs:mavendeps:partial$setup-and-configure-dependencyManagement.adoc[leveloffset=+1]
+
+
+== Setup
+
+=== Dependency / Imports
+
+In the webapp module of your application, add the following dependency:
+
+[source,xml,subs="attributes+"]
+.pom.xml
+----
+<dependencies>
+    <dependency>
+        <groupId>org.apache.causeway.extensions</groupId>
+        <artifactId>causeway-extensions-spring-security-oauth2</artifactId>
+        <version>{page-causewayprevv2}</version>
+    </dependency>
+</dependencies>
+----
+
+
+== Design
+
+The module brings in a transitive dependency to `org.springframework.boot:spring-boot-starter-oauth2-client`.
+Using this, it provides an implementation of the xref:security:spring:about.adoc#authenticatorconverter-spi[AuthenticatorConverter SPI] that recognises the `OAuth2` principal provided by the Spring OAuth2 client.
+
+
+
+[#walk-through-oauth2]
+== Walk-through (Oauth with Github and Shiro authorizor)
+
+Using Spring Security we can configure your app with various authentication providers.
+In this section we describe how to modify the xref:docs:starters:helloworld.adoc[HelloWorld] starter app to use link:https://github.com[github] as an OAuth2 provider.
+The steps here are based on link:https://spring.io/guides/tutorials/spring-boot-oauth2/[this Spring tutorial].
+
+
+=== AppManifest
+
+In your application's xref:userguide::modules.adoc#appmanifest[App Manifest], import `CausewayModuleExtSpringSecurityOAuth2` module:
+
+[source,java]
+.AppManifest.java
+----
+@Configuration
+@Import({
+        ...
+        CausewayModuleExtSpringSecurityOAuth2.class,    // <.>
+        AuthorizorShiro.class,                          // <.>
+        ...
+})
+public class AppManifest {
+}
+----
+<.> The `CausewayModuleExtSpringSecurityOAuth2` module brings in a transitive dependency on `CausewayModuleSecuritySpring`.
+<.> An implementation of `Authorizor` is also required.
+For the purpose of this walkthrough, we'll use the implementation provided by xref:security:shiro:about.adoc[Shiro], namely `AuthorizorShiro`.
+
+[IMPORTANT]
+====
+Make sure that no other `CausewayModuleSecurityXxx` module is imported, either directly or indirectly.
+====
+
+To use the Shiro authorizor, also add in the corresponding dependency:
+
+[source,xml,subs="attributes+"]
+.pom.xml
+----
+<dependencies>
+    <dependency>
+        <groupId>org.apache.causeway.security</groupId>
+        <artifactId>causeway-security-shiro</artifactId>
+        <version>{page-causewayprevv2}</version>
+    </dependency>
+</dependencies>
+----
+
+
+=== Code Changes
+
+The OAuth2 integration provided by Spring (seemingly) forwards onto an "/login" endpoint immediately after the user has logged into github, but with an authenticated principal.
+We therefore use a controller to simply forward directly onto the xref:vw::about.adoc[Wicket Viewer]:
+
+* create this page to redirect:
++
+[source,html]
+.templates/redirect-immediately.html
+----
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+        <meta http-equiv="refresh" content="0;url=/wicket/" />
+    </head>
+    <body>
+        <div id="wrapper">
+        </div>
+    </body>
+</html>
+----
+
+* define this controller for `/login`:
++
+[source,java]
+.LoginController.java
+----
+@Controller
+@RequestMapping({"/login"})
+public class LoginController {
+
+    @RequestMapping(
+        produces = {"text/html"}
+    )
+    public String login(HttpServletRequest request, HttpServletResponse response) {
+        return "redirect-immediately";
+    }
+}
+----
+
+Next, add in `LoginController` to the `AppManifest`.
+
+[source,java]
+.AppManifest.java
+----
+@Configuration
+@Import({
+        ...
+        CausewayModuleExtSpringSecurityOAuth2.class,
+        AuthorizorShiro.class,
+        LoginController.class,
+        ...
+})
+public class AppManifest {
+}
+----
+
+Next configure authenticationStrategy and permissionResolver for realms, and add the userId:
+
+[source,ini]
+.shiro.ini
+----
+[main]
+authenticationStrategy=org.apache.causeway.extensions.secman.delegated.shiro.realm.AuthenticationStrategyForSecMan
+securityManager.authenticator.authenticationStrategy = $authenticationStrategy
+securityManager.realms = $iniRealm
+permissionResolver = org.apache.causeway.security.shiro.authorization.CausewayPermissionResolver
+iniRealm.permissionResolver = $permissionResolver
+...
+[users]
+...
+your.id = ,admin_role
+...
+----
+
+Lastly (and optionally), the swagger/REST API is not configured for oauth2, so we replace the `index.html` page with one to redirect straight to the xref:vw::about.adoc[Wicket Viewer]:
+
+[source,html]
+.static/index.html
+----
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta http-equiv="refresh" content="0;url=/wicket/" />
+</head>
+<body>
+<div id="wrapper">
+    <!-- we just redirect immediately, because swagger/restful API not configured to use spring security -->
+</div>
+</body>
+</html>
+----
+
+
+=== Configuration
+
+We are now ready to configure the app.
+As described in the link:https://spring.io/guides/tutorials/spring-boot-oauth2/[this Spring tutorial]:
+
+* register the app on link:https://github.com[github]:
++
+image::register-github-oauth-app.png[width=500px]
+
+* obtain the clientId and create a new client secret:
++
+image::github-client-id.png[width=600px]
+
+* update the configuration:
++
+[source,properties]
+.config/application-github-example.properties
+----
+spring.security.oauth2.client.registration.github.clientId=XXXX
+spring.security.oauth2.client.registration.github.clientSecret=XXXXXXXX
+----
+
+=== Run the application
+
+You should now be able to run the application, setting the "github-example" profile using this JVM argument:
+
+    -Dspring.profiles.active=github-example
+
+If you are already signed into github:
+
+image::github-already-signed-in.png[width=300px]
+
+then you should be logged in directly; the app will show your user name:
+
+image::helloworld-shows-username.png[width=300px]
+
+On the other hand, if you are not signed in then you will be redirected to the github login page:
+
+image::github-login-page.png[width=300px]
+
+If you have 2FA enabled, then this also works:
+
+image::github-2fa.png[width=300px]
+
+and then, once again, you will be redirected to the app and it will show your user name:
+
+image::helloworld-shows-username.png[width=250px]
+
+Finally, if you log out then Spring will show a page to allow you to trigger the login process:
+
+image::github-sign-in-again.png[width=600px]
+
+
+
+[#walk-through-oauth2-azure]
+== Walk-through (Oauth with Azure and Secman authorizor)
+
+Using Spring Security we can configure your app with various authentication providers.
+In this section we briefly discuss configuring an app to use Microsoft Azure for both:
+
+* server-side login flow
++
+in other words for end-users accessing the xref:vw::about.adoc[Wicket viewer]), and
+
+* client-side login flow with JWT
++
+in other words for REST programmatic clients accessing the xref:vro::about.adoc[Restful Objects viewer].
+
+The server-side login flow is (as you might expect) quite similar to that required by Github.
+
+=== AppManifest
+
+[source,java]
+.AppManifest.java
+----
+@Configuration
+@Import({
+        ...
+        CausewayModuleExtSpringSecurityOAuth2.class,
+        CausewayModuleExtSecmanDelegatedSpringOauth2.class,         // <.>
+})
+@EnableWebSecurity                                                  // <.>
+@ComponentScan(basePackageClasses = AppManifest.class)
+public class AppManifest {
+
+    // ...
+}
+----
+<.> Using secman for permissions (rather than Shiro, as was described in the xref:#walk-through-oauth2[github walkthrough] above)
+<.> We'll use Spring APIs to configure the authentication flows
+
+For the purpose of this walkthrough, we'll use the implementation provided by xref:security:secman:setting-up-with-spring-oauth2.adoc[SecMan].
+
+To use the Secman authorizor, also add in the corresponding dependency:
+
+[source,xml,subs="attributes+"]
+.pom.xml
+----
+<dependencies>
+    <dependency>
+        <groupId>org.apache.causeway.extensions</groupId>
+        <artifactId>causeway-extensions-secman-integration</artifactId>
+        <version>{page-causewayprevv2}</version>
+    </dependency>
+</dependencies>
+----
+
+You'll need to ensure that the users have access to the appropriate roles that grant them permissions; see the Secman docs.
+
+In addition, we use Spring's APIs to configure the two authentication flows:
+
+[source,java]
+.AppManifest.java
+----
+// ,...
+@EnableWebSecurity                                                              // <.>
+public class AppManifest {
+
+    @Bean
+    @Order(2)
+    SecurityFilterChain webSecurity(HttpSecurity http) throws Exception {       // <.>
+        http
+            .cors()
+                .and()
+            .authorizeHttpRequests()
+                .antMatchers("/**")                 // <.>
+                    .authenticated()
+                .anyRequest()
+                    .authenticated()
+                .and()
+            .oauth2Login()
+                .and()
+            .logout()
+                .permitAll()
+        ;
+        return http.build();
+    }
+
+    @Bean
+    @Order(1)
+    SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {       // <.>
+        http
+            .requestMatcher(new RequestHeaderRequestMatcher("Authorization"))
+            .cors()
+                .and()
+            .authorizeHttpRequests()
+                .antMatchers("/**")                 // <4>
+                    .authenticated()
+                .and()
+            .oauth2ResourceServer()
+                .jwt()
+                    .and()
+                .and()
+            .sessionManagement()
+                .disable()
+        ;
+        return http.build();
+    }
+}
+----
+<.> as noted above, we use Spring APIs to configure the authentication flows
+<.> configures the server-side flow
+<.> configures the client-side flow
+<.> uses link:https://ant.apache.org[Apache Ant] style matching syntax
+
+
+=== Azure AD Config
+
+Login to the Azure Portal:
+
+* open the _Azure Active Directory_ blade
+* _App Registrations_
+* New registration
++
+Enter any name; leave the other fields empty for now:
++
+image::azure-register-new-app.png[width=1200px]
+
+* Create new client secret (link to do so is top right)
++
+image::azure-create-client-secret.png[width=800px]
++
+Copy this value immediately; it is not accessible later.
+
+* Add redirect URI, specifying the "Web" platform first.
++
+For example:
++
+image::azure-redirect-uri.png[800px]
++
+In the above, `https://mywebapp.com` is the server to which the deployed, the `/local/oauth2/code/` is fixed, while the suffix "myapp" is the name of your app.
+This app name is used in the configuration of the app, see xref:#configuration-properties[below]
+
+* Add API permissions:
++
+image::azure-api-permissions.png[]
+
+
+[#configuration-properties]
+=== Configuration Properties
+
+Finally need to configure the app to use Oauth:
+
+[source,properties]
+.application.properties
+----
+o365.tenantId=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX  // <.>
+
+spring.security.oauth2.client.registration.myapp.provider=o365
+spring.security.oauth2.client.registration.myapp.client-name=MyApp                                              // <.>
+spring.security.oauth2.client.registration.myapp.client-id=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX                 // <.>
+spring.security.oauth2.client.registration.myapp.client-secret=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX         // <.>
+spring.security.oauth2.client.registration.myapp.redirect-uri=http://mywebapp.com:8080/login/oauth2/code/myapp  // <.>
+spring.security.oauth2.client.registration.myapp.scope=openid, profile, email, user.read                        // <.>
+spring.security.oauth2.client.registration.myapp.authorization-grant-type=authorization_code
+
+spring.security.oauth2.client.provider.o365.token-uri=https://login.microsoftonline.com/${o365.tenantId}/oauth2/v2.0/token
+spring.security.oauth2.client.provider.o365.jwk-set-uri=https://login.microsoftonline.com//${o365.tenantId}/discovery/v2.0/keys
+spring.security.oauth2.client.provider.o365.authorization-uri=https://login.microsoftonline.com//${o365.tenantId}/oauth2/v2.0/authorize
+spring.security.oauth2.client.provider.o365.user-name-attribute=email
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri=https://login.microsoftonline.com/${o365.tenantId}/discovery/v2.0/keys
+----
+<.> Azure tenant Id
+<.> Application (or client) name, recommend that this corresponds to the app name when the client was registered in Azure
+<.> Azure client Id, obtained from the application registration page
+<.> Azure client secret, as setup in the Azure portal
+<.> Redirect URI; must exactly match the redirect URI specified in the Azure portal
+<.> Scope matches the API permissions set up in the Azure portal.
+
+And, to enable JWT (REST client access), also add in:
+
+[source,properties]
+.application.properties
+----
+causeway.viewer.restfulobjects.authentication.strategy-class-name=\
+    org.apache.causeway.extensions.spring.security.oauth2.restful.AuthenticationStrategyJwt
+----

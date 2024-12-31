@@ -1,0 +1,105 @@
+# Linux
+nohup.out
+
+# IDEA
+.idea
+*.iml
+
+# MacOS
+.DS_Store
+
+# Eclipse
+.settings
+.classpath
+.project
+
+# Node
+package-lock.json
+package.json
+pnpmfile.js
+pnpm-lock.yaml
+webpack.config.js
+webpack.generated.js
+node/
+node_modules/
+tsconfig.json
+types.d.ts
+.npmrc
+
+#Gradle
+gradlew
+gradlew.*
+/.gradle/
+**/build/
+
+#Asciidoctor Plugins
+.asciidoctorconfig.adoc
+
+# eclipse plugin https://nodj.github.io/AutoDeriv/
+.derived
+
+#Draw.io
+.$*
+
+#Lombok (don't accept config alterations, might lead to a maintenance hell)
+lombok.config
+
+*.exe
+*~
+.~*
+*.swp
+*.class
+bin/
+target/
+.asciidoctor/
+target-ide/
+logs/
+.factorypath
+tmp/
+.temp-*
+*.stackdump
+
+JArchitectOut/
+*.jdproj
+
+mothballed/component/objectstore/sql/sql-tests-common/hsql-db/
+mothballed/component/objectstore/sql/sql-tests-common/xml/
+component/objectstore/xml/tmp/objects/
+component/objectstore/xml/xml/objects/
+component/objectstore/xml/tmp/tests/
+
+# backup files
+*.bak
+
+# log files
+*.log
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+dependency-reduced-pom.xml
+pom.xml.tag
+pom.xml.next
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+
+.clover/
+*.jdproj
+JArchitectOut/
+
+core/integtestsupport/fixture-data
+
+rebel.xml
+
+.flattened-pom.xml
+
+/site*.yml
+/.antora-cache-dir/
+
+_commit.sh
+
+/incubator/clients/kroviz/package.json
+create-db-schema.sql
+/antora/supplemental-ui/css/download.sh

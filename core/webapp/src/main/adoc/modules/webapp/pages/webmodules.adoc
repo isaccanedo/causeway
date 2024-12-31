@@ -1,0 +1,104 @@
+[#webmodule-interface]
+= `WebModule` interface
+
+:Notice: Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the NOTICE file distributed with this work for additional information regarding copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at. http://www.apache.org/licenses/LICENSE-2.0 . Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR  CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+
+The `WebModule` interface allows modules to dynamically configure ``Filter``s, ``Servlet``s and ``ServletContextListener``s.
+The `@javax.annotation.Priority` annotation is used to ensure that the request chain is sequenced correctly.
+
+.WebModules (priority determines filter sequence, earliest first)
+[cols="6m,^4a,^2a,^3m,^3m,8a", options="header"]
+|===
+
+|Web module
+|`@Priority`
+|listener?
+|filter?
+|servlet?
+|Notes
+
+|WebModule +
+Shiro
+|FIRST + 100
+|Yes
+|/*
+|
+|Either this or spring
+
+|WebModule +
+SpringSecurity
+|FIRST + 100
+|Yes
+|/*
+|
+|Either this or shiro
+
+|WebModule +
+LogOnExceptionLogger
+|EARLY - 100
+|
+|
+/wicket +
+/restful
+|
+|Filter is passthru, with no side-effects. +
+Mapping depends on which viewers configured.
+
+Although priority is relatively early, the filter is registered to be last in pipeline.
+
+|WebModule +
+Cors
+|EARLY
+|
+|
+/wicket +
+/restful
+|
+|Mapping depends on which viewers configured.
+
+|WebModule +
+TemplateResources
+|MIDPOINT - 100
+|
+|*.thtml
+|*.thtml
+|
+
+
+|WebModule +
+JaxrsResteasy4
+|MIDPOINT - 80
+|Yes
+|/restful
+|/restful
+|Filters mapped to servlet
+
+|WebModule +
+Wicket
+|MIDPOINT - 80
+|
+|/wicket
+|
+|
+
+|WebModule +
+ServerSentEvents
+|MIDPOINT
+|
+|
+|/sse
+|servlet only, so priority doesn't really matter.
+
+|WebModule +
+H2Console
+|MIDPOINT
+|
+|
+|/db/*
+|servlet only, so priority doesn't really matter.
+
+|===
+
+
+

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+  
+         http://www.apache.org/licenses/LICENSE-2.0
+         
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"  
+      xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd"  
+      xml:lang="en"  
+      lang="en">
+	<body>
+        <wicket:panel>
+            <div class="bookmarkedPagesPanel">
+                <i class="showPanelTab bookmarkRibbon fas fa-bookmark text-secondary"></i>
+                <div id="bookmarkedPagesSlidingDiv">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="panel-group">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4 class="card-title"><span class="fa fa-fw fa-bookmark"></span> Bookmarks</h4>
+                                    </div>
+
+                                    <div class="card-body" wicket:enclosure="helpText">
+                                        <span wicket:id="helpText"></span>
+                                    </div>
+
+                                    <ul id="bookmarkedPages" class="list-group">
+                                        <li class="list-group-item">
+                                            <ul wicket:id="bookmarkList" class="bookmarkedPagesList list-group">
+                                                <li wicket:id="bookmarkedPageItem" class="bookmarkedPageItem list-group-item">
+                                                    <div>
+                                                        <a href="#" wicket:id="bookmarkedPageLink">
+                                                            <div class="bookmarkedPageImageAndTitle d-inline-block">
+                                                                <span wicket:id="bookmarkedPageFontAwesome"></span>
+                                                                <img wicket:id="bookmarkedPageImage" class="bookmarkedPageImage"/>
+                                                                <span wicket:id="bookmarkedPageTitle" class="bookmarkedPageTitle">[link title]</span>
+                                                            </div>
+                                                        </a>
+
+                                                        <a href="#" wicket:id="clearBookmarkLink" class="clearBookmarkPlaceHolder float-right">
+                                                            <span class="fa fa-fw fa-ban text-danger"></span>
+                                                        </a>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+
+                                    <div class="card-footer" wicket:enclosure="clearBookmarks">
+                                        <span>&nbsp;</span>
+                                        <a href="#" wicket:id="clearBookmarks" class="clearBookmarksA btn-link float-right" title="Clear Bookmarks">
+                                            <span class="text-danger">Clear all</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </wicket:panel>
+    </body>
+</html>

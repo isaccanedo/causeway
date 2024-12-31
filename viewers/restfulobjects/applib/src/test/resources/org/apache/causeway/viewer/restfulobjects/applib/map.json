@@ -1,0 +1,82 @@
+{ "aString": "aStringValue",
+  "anInt": 123,
+  "aNull": null,
+  "aLong": 1234567890123,
+  "aDouble": 12345678901234534.3242,
+  "anotherDouble": 1234567.89,
+  "aBigDecimal": "12345678901234567890.1234",
+  "aBigInteger": "12345678901234567890",
+  "aBoolean": true,
+  "aLink": {
+    "href": "http://foo/bar",
+    "method": "GET",
+    "rel": "someRel"
+  },
+  "aMixedArray" : [ "a", "b", 123, { "foo": "bar"} ],
+  "aStringArray" : [ "a", "b", "c" ],
+  "anEmptyArray" : [  ],
+  "aSubMap": {
+    "aString": "aSubMapStringValue",
+    "anInt": 456,
+    "aBoolean": true,
+    "aLong": 1234567890456,
+    "aDouble": 12345678901234534.4567,
+    "aBigDecimal": "12345678901234567890.1234",
+    "aBigInteger": "12345678901234567890",
+    "aLink": {
+      "href": "http://foo/bar",
+      "method": "GET",
+      "rel": "someSubRel"
+    }
+  },
+  "yetAnotherSubMap": {
+    "aFormattedBigDecimal": {
+        "value":"123.45",
+        "format": "big-decimal(5,2)"
+    },
+    "anInvalidFormattedBigDecimal": {
+        "value":"123.45",
+        "format": "big-decimal(4,2)"
+    },
+    "aFormattedBigInteger": {
+        "value": "123",
+        "format": "big-integer(3)"
+    },
+    "anInvalidFormattedBigInteger": {
+        "value": "123",
+        "format": "big-integer(2)"
+    }
+  },
+  "aSubList": [
+    "a", "b", "c"
+  ],
+  "anotherSubMap": {
+    "aListOfLinks": [
+      {
+        "href": "http://foo/bar",
+        "method": "GET",
+        "rel": "aRel"
+      },
+      {
+        "href": "http://foo/bar/otherRel",
+        "method": "GET",
+        "rel": "otherRel"
+      },
+      {
+        "href": "http://foo/bar/multiRel1",
+        "method": "GET",
+        "rel": "multiRel",
+        "data": "someData"
+      },
+      {
+        "href": "http://foo/bar/multiRel2",
+        "method": "GET",
+        "rel": "multiRel",
+        "data": "someOtherData"
+      }
+    ],
+    "aMap": "aValue",
+    "anEmptyList": [
+     ]
+  }
+}

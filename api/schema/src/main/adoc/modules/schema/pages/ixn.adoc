@@ -1,0 +1,196 @@
+[[ixn]]
+= Interaction Execution
+
+:Notice: Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the NOTICE file distributed with this work for additional information regarding copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at. http://www.apache.org/licenses/LICENSE-2.0 . Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR  CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+:page-partial:
+
+
+The interaction ("ixn") schema defines the serialized form of an action invocation or a property edit.
+In fact, it actually defines a call-graph of such executions for those cases where the xref:refguide:applib:index/services/wrapper/WrapperFactory.adoc[WrapperFactory] is used to execute sub-actions/property edits.
+
+Each execution identifies the target object, the member to invoke, and the arguments.
+It also captures metrics about the execution, and the result of the execution (eg return value of an action invocation).
+
+[NOTE]
+====
+Mixin actions are represented as regular actions on the mixed-in object.
+In other words, the fact that the actual implementation of the action is defined by a mixin is an implementation detail only.
+====
+
+
+== `interactionDto`
+
+The `interactionDto` root element is defined as:
+
+[source,xml]
+----
+<xs:schema targetNamespace="https://causeway.apache.org/schema/ixn"              <!--.-->
+           elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="https://causeway.apache.org/schema/ixn"
+           xmlns:cmd="https://causeway.apache.org/schema/cmd"
+           xmlns:com="https://causeway.apache.org/schema/common">
+
+    <xs:import namespace="https://causeway.apache.org/schema/common"             <!--.-->
+               schemaLocation="../common/common-2.0.xsd"/>
+    <xs:import namespace="https://causeway.apache.org/schema/cmd"
+               schemaLocation="../cmd/cmd-2.0.xsd"/>
+
+    <xs:element name="interactionDto">                                      <!--.-->
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="majorVersion" type="xs:string"            <!--.-->
+                            minOccurs="0" maxOccurs="1" default="2"/>
+                <xs:element name="minorVersion" type="xs:string"
+                            minOccurs="0" maxOccurs="1" default="0"/>
+
+                <xs:element name="interactionId" type="xs:string"/>         <!--.-->
+                <xs:element name="execution" type="memberExecutionDto"/>    <!--.-->
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>
+----
+<.> the interaction schema has a namespace URI of "https://causeway.apache.org/schema/ixn".
+Although URIs are not the same as URLs, you will find that the schemas are also downloadable from this location.
+<.> uses complex types defined in the xref:refguide:schema:common.adoc["common" schema] and also the xref:refguide:schema:cmd.adoc["cmd" schema]
+<.> definition of the `interactionDto` root element.
+The corresponding XML will use this as its top-level element.
+<.> each instance of this schema indicates the version of the schema it is compatible with (following semantic versioning)
+<.> unique identifier for this interaction.
+Together with the target, the interaction Id can be used to correlate back to the xref:refguide:schema:cmd.adoc[command] that represented the intention to perform this execution, as well as to any xref:refguide:schema:chg.adoc[changes] to domain objects that occur as a side-effect of the interaction.
+<.> the top-level `memberExecutionDto`, defined below, either an action invocation or edit of a property.
+
+The `InteractionDto` DTO corresponding to the `interactionDto` root element can be marshalled to/from XML using the `InteractionDtoUtils` class.
+
+
+
+[#memberexecutiondto]
+== `memberExecutionDto`
+
+The `memberExecutionDto` complex type is an abstract type representing either the invocation an action or the editing of a property.
+It corresponds to the xref:refguide:schema:cmd.adoc#memberdto-and-subtypes[memberDto] of the "cmd" schema; some elements are copied directly:
+
+[source,xml]
+----
+<xs:schema targetNamespace="https://causeway.apache.org/schema/ixn" ... >
+    ...
+    <xs:complexType name="memberExecutionDto" abstract="true">              <!--.-->
+        <xs:sequence>
+            <xs:element name="sequence" type="xs:int"/>                     <!--.-->
+            <xs:element name="target" type="com:oidDto"/>                   <!--.-->
+            <xs:element name="logicalMemberIdentifier" type="xs:string"/>   <!--.-->
+            <xs:element name="username" type="xs:string"/>                  <!--.-->
+            <xs:element name="metrics" type="metricsDto"/>                  <!--.-->
+            <xs:element name="threw" type="exceptionDto"                    <!--.-->
+                        minOccurs="0" maxOccurs="1"/>
+            <xs:element name="childExecutions" minOccurs="0" maxOccurs="1"> <!--.-->
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="execution" type="memberExecutionDto"
+                                    minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute  name="interactionType" type="com:interactionType"/>  <!--.-->
+    </xs:complexType>
+    ...
+</xs:schema>
+----
+<.> the `memberExecutionDto` is an abstract type
+<.> uniquely identifies this execution within the transaction.
+Can be combined with `transactionId` to create a unique identifier (across all other interaction executions and also changed objects events) of this particular interaction execution.
+<.> the target object, corresponding to one of the elements of the `targets` element of the xref:refguide:schema:cmd.adoc#memberdto-and-subtypes[memberDto]
+<.> the _logical_ member identifier; corresponds to `logicalMemberIdentifier` of the `member` element of the xref:refguide:schema:cmd.adoc#memberdto-and-subtypes[memberDto]
+<.> the user executing the action invocation/property edit; corresponds to the `username` element of the xref:refguide:schema:cmd.adoc[cmd]
+<.> the set of metrics captured for this execution, of type `metricsDto` defined xref:refguide:schema:ixn.adoc#ancillary-types[below].
+<.> if the action invocation/property edit threw an exception, then this is captured here.
+<.> if any sub-actions or sub-edits were performed via the xref:refguide:applib:index/services/wrapper/WrapperFactory.adoc[WrapperFactory], then these are captured in the `childExecutions` element.
+<.> the `interactionType` attribute indicates whether the member is an action or a property (similar attribute exists for the "cmd" schema).
+
+In general the `logicalMemberIdentifier` should be used in preference to the `memberIdentifier` because will not (necessarily) have to change if the class is moved during a refactoring.
+
+The `actionInvocationDto` and `propertyEditDto` are the concrete subtypes:
+
+[source,xml]
+----
+<xs:schema targetNamespace="https://causeway.apache.org/schema/ixn" ... >
+    ...
+    <xs:complexType name="actionInvocationDto">                             <!--.-->
+        <xs:complexContent>
+            <xs:extension base="memberExecutionDto">
+                <xs:sequence>
+                    <xs:element name="parameters" type="cmd:paramsDto"/>    <!--.-->
+                    <xs:element name="returned"                             <!--.-->
+                                type="com:valueWithTypeDto"
+                                minOccurs="0" maxOccurs="1"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    ...
+    <xs:complexType name="propertyEditDto">                                 <!--.-->
+        <xs:complexContent>
+            <xs:extension base="memberExecutionDto">
+                <xs:sequence>
+                    <xs:element name="newValue"                             <!--.-->
+                                type="com:valueWithTypeDto"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    ...
+</xs:schema>
+----
+<.> the `actionInvocationDto` inherits from `memberExecutionDto`.
+It corresponds to the similar
+xref:refguide:schema:cmd.adoc#memberdto-and-subtypes[actionDto] complex type of the "cmd" schema
+<.> the `parameters` element captures the parameter and argument values; for the top-level execution it is a direct copy of the corresponding `parameters` element of the `actionDto` complex type of the "cmd" schema.
+<.> the `returned` element captures the returned value (if not void).
+It is not valid for both this element and the inherited `threw` element to both be populated.
+<.> the `propertyEditDto` inherits from `memberExecutionDto`.
+It corresponds to the similar xref:refguide:schema:cmd.adoc#memberdto-and-subtypes[propertyDto] complex type of the "cmd" schema
+<.> the `newValue` element captures the new value; for the top-level execution it is a direct
+copy of the corresponding `newValue` element of the `propertyDto` complex type of the "cmd" schema.
+
+
+[#ancillary-types]
+== Ancillary types
+
+The schema also defines a small number of supporting types:
+
+[source,xml]
+----
+<xs:schema targetNamespace="https://causeway.apache.org/schema/ixn" ... >
+    ...
+    <xs:complexType name="metricsDto">                                      <!--.-->
+        <xs:sequence>
+            <xs:element name="timings" type="com:periodDto"/>
+            <xs:element name="objectCounts" type="objectCountsDto"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="objectCountsDto">                                 <!--.-->
+        <xs:sequence>
+            <xs:element name="loaded" type="com:differenceDto"/>
+            <xs:element name="dirtied" type="com:differenceDto"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="exceptionDto"/>                                   <!--.-->
+        <xs:sequence>
+            <xs:element name="message" type="xs:string"/>
+            <xs:element name="stackTrace" type="xs:string"/>
+            <xs:element name="causedBy" type="exceptionDto" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>
+----
+<.> the `metricsDto` captures the time to perform an execution, and also the differences in various object counts.
+<.> the `objectCountsDto` complex type is the set of before/after differences, one for each execution; the framework tracks number of objects loaded (read from) the database and the number of objects dirtied (will need to be saved back to the database).
+Together these metrics give an idea of the "size" of this  particular execution.
+<.> the `exceptionDto` complex type defines a structure for capturing the stack trace of any exception that might occur in the course of invoking an action or editing a property.
+
+The xref:refguide:schema:chg.adoc[changes] schema also provides metrics on the number of objects loaded/changed, but relates to the entire interaction rather than just one (sub)execution of an interaction.

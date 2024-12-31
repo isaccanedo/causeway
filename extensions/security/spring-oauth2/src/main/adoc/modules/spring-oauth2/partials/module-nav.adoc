@@ -1,0 +1,2 @@
+
+** xref:security:spring-oauth2:about.adoc[Spring OAuth2 Integration]

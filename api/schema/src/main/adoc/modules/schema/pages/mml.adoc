@@ -1,0 +1,343 @@
+[[mml]]
+= Metamodel
+
+:Notice: Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the NOTICE file distributed with this work for additional information regarding copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at. http://www.apache.org/licenses/LICENSE-2.0 . Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR  CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+:page-partial:
+
+
+The metamodel ("mml") schema defines the serialized form of the metamodel, used by the framework to render and interact with the application's domain objects.
+
+image::schema/metamodel-hierarchy.png[]
+
+The top-level metamodel consists of a set of domain classes, which in turn contain members (actions, properties and collections).
+Actions also have action parameters.
+All of the elements of the metamodel (domain classes, domain class members and action parameters) can have multiple facets associated with them.
+Some facets relate to presentational aspects (for example the name), others to the domain layer (for example the presence of a `validateXxx()` method to enforce business rules).
+
+
+== `metamodelDto`
+
+The `metamodelDto` root element is defined as:
+
+[source,xml]
+----
+<xs:schema targetNamespace="https://causeway.apache.org/schema/metamodel"        <!--.-->
+           elementFormDefault="qualified"
+           xmlns="https://causeway.apache.org/schema/metamodel"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="metamodelDto">                                        <!--.-->
+        <xs:complexType>
+            <xs:sequence minOccurs="1" maxOccurs="unbounded">               <!--.-->
+                <xs:element ref="domainClassDto"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    ...
+</xs:schema>
+----
+<.> the metamodel schema has a namespace URI of "https://causeway.apache.org/schema/mml".
+Although URIs are not the same as URLs, you will find that the schemas are also downloadable from this location.
+<.> definition of the `metamodelDto` root element.
+The corresponding XML will use this as its top-level element.
+<.> consists of a list of `domainClassDto`, defined below.
+
+
+
+== `domainClassDto`
+
+The `domainClassDto` element describes the behaviour and structure of a single domain class within the metamodel.
+
+[source,xml]
+----
+<xs:schema targetNamespace="https://causeway.apache.org/schema/mml" ... >
+    ...
+    <xs:element name="domainClassDto">                                          <!--.-->
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="facetHolder">                               <!--.-->
+                    <xs:sequence>
+                        <xs:element name="majorVersion" type="xs:string"        <!--.-->
+                                    minOccurs="0" maxOccurs="1" default="2"/>
+                        <xs:element name="minorVersion" type="xs:string"
+                                    minOccurs="0" maxOccurs="1" default="0"/>
+                        <xs:element name="properties" minOccurs="0">            <!--.-->
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="prop" type="property"
+                                                minOccurs="0" maxOccurs="unbounded"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="collections" minOccurs="0">           <!--.-->
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="coll" type="collection"
+                                                minOccurs="0" maxOccurs="unbounded"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="actions" minOccurs="0">               <!--.-->
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="act" type="action"
+                                                minOccurs="0" maxOccurs="unbounded"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="id" type="xs:ID"/>                      <!--.-->
+                    <xs:attribute name="service" type="xs:boolean"/>            <!--.-->
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+    ...
+</xs:schema>
+----
+<.> `domainClassDto` is defined as an element so that if necessary each domain class can be serialized to XML independently (rather than only within an outer `metamodelDto`.
+<.> extends from `facetHolder` type, defined below.
++
+This allows a map of facets to be associated with the domain class.
+<.> each instance of this schema indicates the version of the schema it is compatible with (following semantic versioning)
+<.> the collection of properties (if any) of this domain class.
++
+This will include any mixin properties.
+<.> the collection of collections (if any) of this domain class.
++
+This will include any mixin collections.
+<.> the collection of actions (if any) of this domain class.
++
+This will include any mixin actions.
+<.> The fully qualified class name of the underlying Java class.
++
+This is declared as 'xs:ID' so can be referenced elsewhere (using 'xs:IDREF').
+<.> Whether this is domain type is a domain service
+
+
+== `member`
+
+The `member` (abstract) complex type is the supertype for properties, collections and actions.
+
+[source,xml]
+----
+<xs:schema targetNamespace="https://causeway.apache.org/schema/mml" ... >
+    ...
+    <xs:complexType name="member">
+        <xs:complexContent>
+            <xs:extension base="facetHolder">                           <!--.-->
+                <xs:attribute name="id" type="xs:string"/>              <!--.-->
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    ...
+</xs:schema>
+----
+<.> Inherits from `facetHolder`, allowing a set of facets to be associated with the member.
+<.> The id of the member, which should be unique within the domain class.
++
+[NOTE]
+====
+This assumes no overloading of method names.
+====
+
+
+== `property`
+
+The `property` complex type represent a scalar association returning a single value (eg `getFirstName()`).
+
+[source,xml]
+----
+<xs:schema targetNamespace="https://causeway.apache.org/schema/mml" ... >
+    ...
+    <xs:complexType name="property">
+        <xs:complexContent>
+            <xs:extension base="member">                        <!--.-->
+                <xs:sequence>
+                    <xs:element name="type" type="xs:IDREF"/>   <!--.-->
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    ...
+</xs:schema>
+----
+<.> Extends from `member` complex type, defined above.
+Every property therefore has an id (unique within the domain class), and a set of facets.
+<.> A (reference to ) the type of this property, eg a String or a Customer.
++
+This will be the value of the `id` of some other `domainClassDto`.
+
+
+== `collection`
+
+Like `property` (above), the `collection` complex types represent an association, but this time one that is a vector, in other words returning multiple instances (eg `getOrders()`).
+
+[source,xml]
+----
+<xs:schema targetNamespace="https://causeway.apache.org/schema/mml" ... >
+    ...
+    <xs:complexType name="collection">
+        <xs:complexContent>
+            <xs:extension base="member">                            <!--.-->
+                <xs:sequence>
+                    <xs:element name="type" type="xs:IDREF"/>       <!--.-->
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    ...
+</xs:schema>
+----
+<.> Extends from `member` complex type, defined above.
+Every collection therefore has an id (unique within the domain class), and a set of facets.
+<.> A (reference to ) the _element_ type of this collection, eg a Customer.
++
+This will be the value of the `id` of some other `domainClassDto`.
+
+
+== `action`
+
+The `action` complex type represents a behaviour of the domain object.
+
+[source,xml]
+----
+<xs:schema targetNamespace="https://causeway.apache.org/schema/mml" ... >
+    ...
+    <xs:complexType name="action">
+        <xs:complexContent>
+            <xs:extension base="member">                                                <!--.-->
+                <xs:sequence>
+                    <xs:element name="returnType" type="xs:IDREF"/>                     <!--.-->
+                    <xs:element name="params">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element name="param" type="param"                   <!--.-->
+                                            minOccurs="0" maxOccurs="unbounded"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+
+    ...
+</xs:schema>
+----
+<.> Extends from `member` complex type, defined above.
+Every action therefore has an id (unique within the domain class), and a set of facets.
+<.> (A reference to) the return type of this action, eg a String or a Customer.
+<.> Each action has a collection of parameters (possibly none).
+
+
+== Action parameters
+
+The `param` (abstract) complex type represents a parameter of an `action`.
+The concrete implementations are either `scalarParam` or `vectorParam`.
+
+
+[source,xml]
+----
+<xs:schema targetNamespace="https://causeway.apache.org/schema/mml" ... >
+    ...
+    <xs:complexType name="param">                                   <!--.-->
+        <xs:complexContent>
+            <xs:extension base="facetHolder">                       <!--.-->
+                <xs:sequence>
+                    <xs:element name="type" type="xs:IDREF"/>       <!--.-->
+                </xs:sequence>
+                <xs:attribute name="id" type="xs:string"/>          <!--.-->
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="scalarParam">                             <!--.-->
+        <xs:complexContent>
+            <xs:extension base="param">
+                <xs:sequence>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="vectorParam">                             <!--.-->
+        <xs:complexContent>
+            <xs:extension base="param">
+                <xs:sequence>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    ...
+</xs:schema>
+----
+<1> defines the `param` (abstract) complex type
+<2> inherits from `facetHolder`, allowing a set of facets to be associated with the action parameter.
+<3> A (reference to) the type of this action parameter, eg a String or a Customer.
++
+For vector parameters, this is the _element_ type of the collection parameter.
+<4> The id of the parameter, which should be unique within the action.
+<5> defines the `scalarParam` (concrete) complex type
+<6> defines the `vectorParam` (concrete) complex type
+
+
+== `facetHolder` and `facet`
+
+The `facetHolder` (abstract) complex type defines a collection of ``facet``s, where a `facet` is in effect just a type and an implementation.
+In most cases the type has a particular purpose, for example representing the means to obtain the icon of a domain class, or the name of a parameter.
+
+Each `facet` can also have bag of associated attributes (each attribute is just a tuple of key/value pairs).
+The meaning of the attributes depends on the facet implementation.
+
+[source,xml]
+----
+<xs:schema targetNamespace="https://causeway.apache.org/schema/mml" ... >
+    ...
+    <xs:complexType name="facetHolder">                         <!--.-->
+        <xs:sequence>
+            <xs:element name="facets" minOccurs="0">            <!--.-->
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="facet" type="facet"
+                                    minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="facet">                               <!--.-->
+        <xs:sequence>
+            <xs:element name="attr" type="facetAttr"            <!--.-->
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string"/>              <!--.-->
+        <xs:attribute name="fqcn" type="xs:string"/>            <!--.-->
+    </xs:complexType>
+
+    <xs:complexType name="facetAttr">                           <!--.-->
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="name" type="xs:string"/>    <!--.-->
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    ...
+</xs:schema>
+----
+<.> defines the `facetHolder` (abstract) complex type
+<.> \... which contains a set of ``facet``s
+<.> defines the `facet` complex type
+<.> \... which contains a set of ``facetAttr``s.
++
+The meaning of the attributes depends on the implementation of the facet.
+<.> the identifier of the _type_ of the facet, well-known by the framework as representing a certain semantic (eg icon name or name of an action parameter)
+<.> the fully qualified class name of the implementation of the facet
+<.> defines the `facetAttr` complex type
+<.> the name of the attribute, unique across all facet attributes of a facet.
++
+Note this complexType extends from `xs:string,` which defines the attribute's corresponding value.
+

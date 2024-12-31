@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<html xmlns:wicket="http://wicket.apache.org">
+<body>
+	<wicket:panel>
+		<!-- <header> -->
+		<nav class="navbar navbar-expand-md sticky-top navbar-dark bg-primary"
+			role="navigation">
+
+			<div class="container-fluid">
+				<a class="navbar-brand mr-1 ml-n2 mt-n2 mb-n2"
+					wicket:id="applicationName"> <span wicket:id="brandText"></span>
+					<img class="navbar-brand-logo" alt="Brand" wicket:id="brandLogo" />
+				</a>
+				<button type="button" class="navbar-toggler"
+					data-bs-toggle="collapse"
+					data-bs-target=".navbar-collapse.app-actions" aria-expanded="false"
+					aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse app-actions mr-auto">
+					<ul class="navbar-nav navbar-wrap" wicket:id="primaryMenuBar"></ul>
+				</div>
+				<div
+					class="collapse navbar-collapse app-actions p-0 flex-grow-0">
+					<ul class="navbar-nav navbar-wrap" wicket:id="secondaryMenuBar"></ul>
+					<ul class="navbar-nav tertiary">
+						<li class="nav-item dropdown"><a href="#"
+							class="nav-link dropdown-toggle" id="tertiaryDropdownMenuLink"
+							role="button" data-bs-toggle="dropdown" aria-haspopup="true"
+							aria-expanded="false"> <span wicket:id="userIcon"> <i
+									class="fa fa-fw fa-user"></i>
+							</span> <img class="avatar" alt="Avatar" wicket:id="userAvatar" /> <span
+								class="userName" wicket:id="userName"></span> <span
+								class="caret"></span>
+						</a>
+							<ul wicket:id="tertiaryMenuBar"
+								class="dropdown-menu dropdown-menu-right" role="menu"
+								aria-labelledby="tertiaryDropdownMenuLink">
+							</ul></li>
+					</ul>
+				</div>
+			</div>
+
+		</nav>
+		<!-- </header> -->
+	</wicket:panel>
+</body>
+</html>

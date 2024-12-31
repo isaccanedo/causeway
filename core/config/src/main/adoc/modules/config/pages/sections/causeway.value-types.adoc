@@ -1,0 +1,249 @@
+= Value types
+:page-role: -toc -narrow
+
+
+:Notice: Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the NOTICE file distributed with this work for additional information regarding copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at. http://www.apache.org/licenses/LICENSE-2.0 . Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR  CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+include::../section-hooks/causeway.value-types~pre.adoc[]
+
+[cols="3a,2a,5a", options="header"]
+|===
+|Property
+|Default
+|Description
+|
+[[causeway.value-types.big-decimal.display.min-scale]]
+causeway.value-types.big-decimal. +
+display.min-scale
+
+| 
+| The minimum scale to use for all ``BigDecimal``s.
+
+Is only used if the minimum scale has not been specified explicitly by some other means, typically either ``Digits#fraction()`` or an ORM semantic such as the (JPA) ``Column#scale()``.
+
+
+|
+[[causeway.value-types.big-decimal.display.use-grouping-separator]]
+causeway.value-types.big-decimal. +
+display.use-grouping-separator
+
+|  true
+| Whether to use a grouping (thousands) separator (eg the "," (comma) in the English locale) when rendering a big decimal. @see Editing#isUseGroupingSeparator()
+
+
+|
+[[causeway.value-types.big-decimal.editing.preserve-scale]]
+causeway.value-types.big-decimal. +
+editing.preserve-scale
+
+| 
+| When a BigDecimal is presented for editing, whether it should enforce the scale, possibly meaning trailing '0's to pad). This is probably appropriate for BigDecimals that represent a money amount.
+
+
+|
+[[causeway.value-types.big-decimal.editing.use-grouping-separator]]
+causeway.value-types.big-decimal. +
+editing.use-grouping-separator
+
+| 
+| A common use of ``BigDecimal`` is as a money value. In some locales (eg English), the "," (comma) is the grouping (thousands) separator wihle the "." (period) acts as a decimal point, but in others (eg France, Italy) it is the other way around.
+
+Surprisingly perhaps, a string such as "123,99", when parsed ((by ``DecimalFormat``) in an English locale, is not rejected but instead is evaluated as the value 12399L. That's almost certainly not what the end-user would have expected, and results in a money value 100x too large.
+
+The purpose of this configuration property is to remove the confusion by simply disallowing the thousands separator from being part of the input string.
+
+For maximum safety, allowing the grouping separator is disallowed, but the alternate (original) behaviour can be reinstated by setting this config property back to ``true``.
+
+The same configuration property is also used for rendering the value.
+
+@see Display#isUseGroupingSeparator()
+
+
+|
+[[causeway.value-types.big-decimal.use-scale-for-min-fractional-facet]]
+causeway.value-types.big-decimal. +
+use-scale-for-min-fractional-facet
+
+|  true
+| Indicates how to derive the min fractional facet (the minimum number of digits after the decimal point).
+
+If this flag is set, then the ``Digits#fraction()`` annotation or ORM equivalent (the JDO ``@Column#scale`` or the JPA ``Column#scale()``) should be used for the ``MinFractionalFacet`` as well as the ``MaxFractionalFacet``.
+
+What this means in practice is that a numeric values will be rendered to the same number of fractional digits, irrespective of whether they are whole numbers or fractional. For example, with a scale of 2, then "123.4532" will be rendered as "123.45", while "123" will be rendered as "123.00".
+
+If this flag is NOT set, or if it is set but there is no annotation, then the ``#minScale`` config property is used as a fallback.
+
+If there is no fallback, then it means that a big decimal such as "123.00" will be presented as just "123" (that is, the shortest possible textual representation).
+
+
+|
+[[causeway.value-types.kroki.backend-url]]
+causeway.value-types.kroki. +
+backend-url
+
+| 
+| If set, adds plantuml support to the AsciiDoc value type.
+
+Eg. via docker instance like \{@literal yuzutech/kroki}.
+
+
+|
+[[causeway.value-types.kroki.request-timeout]]
+causeway.value-types.kroki. +
+request-timeout
+
+|  5000ms
+| Max time for requests to the ``#getBackendUrl()``, when waiting for a response. (default: 5 seconds)
+
+
+|
+[[causeway.value-types.temporal.editing.date-pattern]]
+causeway.value-types.temporal. +
+editing.date-pattern
+
+|  yyyy-MM-dd
+| null
+
+
+|
+[[causeway.value-types.temporal.editing.date-time-joining-pattern]]
+causeway.value-types.temporal. +
+editing.date-time-joining-pattern
+
+|  %1$s %2$s
+| null
+
+
+|
+[[causeway.value-types.temporal.editing.offset-pattern-for-input]]
+causeway.value-types.temporal. +
+editing.offset-pattern-for-input
+
+|  [XXX][X]
+| null
+
+
+|
+[[causeway.value-types.temporal.editing.offset-pattern-for-output]]
+causeway.value-types.temporal. +
+editing.offset-pattern-for-output
+
+|  XXX
+| null
+
+
+|
+[[causeway.value-types.temporal.editing.time-pattern-hour]]
+causeway.value-types.temporal. +
+editing.time-pattern-hour
+
+|  HH
+| null
+
+
+|
+[[causeway.value-types.temporal.editing.time-pattern-micro-second]]
+causeway.value-types.temporal. +
+editing.time-pattern-micro-second
+
+|  HH[:mm[:ss][.SSSSSS]]
+| null
+
+
+|
+[[causeway.value-types.temporal.editing.time-pattern-milli-second]]
+causeway.value-types.temporal. +
+editing.time-pattern-milli-second
+
+|  HH[:mm[:ss][.SSS]]
+| null
+
+
+|
+[[causeway.value-types.temporal.editing.time-pattern-minute]]
+causeway.value-types.temporal. +
+editing.time-pattern-minute
+
+|  HH[:mm]
+| null
+
+
+|
+[[causeway.value-types.temporal.editing.time-pattern-nano-second]]
+causeway.value-types.temporal. +
+editing.time-pattern-nano-second
+
+|  HH[:mm[:ss][.SSSSSSSSS]]
+| null
+
+
+|
+[[causeway.value-types.temporal.editing.time-pattern-second]]
+causeway.value-types.temporal. +
+editing.time-pattern-second
+
+|  HH[:mm[:ss]]
+| null
+
+
+|
+[[causeway.value-types.temporal.editing.zone-id-pattern-for-input]]
+causeway.value-types.temporal. +
+editing.zone-id-pattern-for-input
+
+|  VV
+| null
+
+
+|
+[[causeway.value-types.temporal.editing.zone-id-pattern-for-output]]
+causeway.value-types.temporal. +
+editing.zone-id-pattern-for-output
+
+|  VV
+| null
+
+
+|
+[[causeway.value-types.temporal.editing.zone-joining-pattern]]
+causeway.value-types.temporal. +
+editing.zone-joining-pattern
+
+|  %1$s %2$s
+| null
+
+
+|
+[[causeway.value-types.big-decimal.min-scale]]
+causeway.value-types.big-decimal. +
+min-scale
+
+| 
+| The minimum scale to use for all ``BigDecimal``s.
+
+Is only used if the minimum scale has not been specified explicitly by some other means, typically either ``Digits#fraction()`` or an ORM semantic such as the (JPA) ``Column#scale()``. @deprecated - use ``Display#getMinScale()`` instead
+
+
+|
+[[causeway.value-types.big-decimal.use-grouping-separator]]
+causeway.value-types.big-decimal. +
+use-grouping-separator
+
+| 
+| A common use of ``BigDecimal`` is as a money value. In some locales (eg English), the "," (comma) is the grouping (thousands) separator wihle the "." (period) acts as a decimal point, but in others (eg France, Italy) it is the other way around.
+
+Surprisingly perhaps, a string such as "123,99", when parsed ((by ``DecimalFormat``) in an English locale, is not rejected but instead is evaluated as the value 12399L. That's almost certainly not what the end-user would have expected, and results in a money value 100x too large.
+
+The purpose of this configuration property is to remove the confusion by simply disallowing the thousands separator from being part of the input string.
+
+For maximum safety, allowing the grouping separator is disallowed, but the alternate (original) behaviour can be reinstated by setting this config property back to ``true``.
+
+The same configuration property is also used for rendering the value.
+
+@deprecated - use ``Editing#isUseGroupingSeparator()`` instead.
+
+
+
+|===
+
+include::../section-hooks/causeway.value-types~post.adoc[]

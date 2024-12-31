@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.apache.causeway</groupId>
+	<artifactId>causeway-all</artifactId>
+	<version>2.0.0-SNAPSHOT</version>
+
+	<packaging>pom</packaging>
+
+	<name>Apache Causeway (Aggregator)</name>
+	<description>
+        Convenience aggregator POM that references all modules, some explicitely,
+        others via profiles, that are not activiated per default.
+        The parent POM of the core framework is bom/pom.xml.
+    </description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.deploy.skip>true</maven.deploy.skip> <!-- don't deploy the aggregator -->
+
+		<maven-timeline.version>2.0.2</maven-timeline.version>
+	</properties>
+
+	<scm>
+		<connection>scm:git:https://github.com/apache/causeway.git</connection>
+		<developerConnection>scm:git:https://github.com/apache/causeway.git</developerConnection>
+		<url>https://github.com/apache/causeway.git</url>
+		<tag>HEAD</tag>
+	</scm>
+
+	<build>
+		<extensions>
+			<extension>
+				<groupId>io.takari.maven</groupId>
+				<artifactId>maven-timeline</artifactId>
+				<version>${maven-timeline.version}</version>
+			</extension>
+		</extensions>
+	</build>
+
+	<profiles>
+
+		<!-- ESSENTIAL MODULES -->
+
+		<profile>
+			<id>essential</id>
+			<activation>
+				<property>
+					<name>!skip.essential</name>
+				</property>
+			</activation>
+			<modules>
+				<!--
+                essential modules required to run web applications and tests;
+                non-essential modules can be added to the build via profiles
+                (as defined below);
+
+                keep module declarations in alphabetical order!
+
+                also keep profiles in sync with the site documentation
+                https://github.com/apache/causeway/blob/master/antora/components/conguide/modules/ROOT/pages/building-apache-causeway.adoc
+                    -->
+                <module>bom</module>
+				<module>core</module>
+				<module>extensions</module>
+				<module>mavendeps</module>
+				<module>starters</module>
+				<module>testing</module>
+				<module>valuetypes</module>
+			</modules>
+
+		</profile>
+
+		<!-- RELEASED MODULES -->
+
+		<profile>
+			<id>released</id>
+			<activation>
+				<property>
+					<name>released</name>
+				</property>
+			</activation>
+			<modules>
+				<module>bom</module>
+				<module>core</module>
+				<module>extensions</module>
+				<module>mavendeps</module>
+				<module>starters</module>
+				<module>testing</module>
+				<module>valuetypes</module>
+			</modules>
+		</profile>
+
+		<!-- ALL MODULES -->
+
+		<profile>
+			<id>module-all</id>
+			<activation>
+				<property>
+					<name>module-all</name>
+				</property>
+			</activation>
+			<modules>
+				<module>antora</module>
+				<module>incubator</module>
+				<module>regressiontests</module>
+			</modules>
+		</profile>
+
+		<!-- ALL MODULES - TROUBLE SHOOTING -->
+
+		<profile>
+			<id>module-all-except-incubator</id>
+			<activation>
+				<property>
+					<name>module-all-except-incubator</name>
+				</property>
+			</activation>
+			<modules>
+				<module>antora</module>
+				<module>regressiontests</module>
+			</modules>
+		</profile>
+
+		<!-- NON-ESSENTIAL MODULES -->
+
+		<profile>
+			<id>module-antora</id>
+			<activation>
+				<property>
+					<name>module-antora</name>
+				</property>
+			</activation>
+			<modules>
+				<module>antora</module>
+			</modules>
+		</profile>
+
+		<profile>
+			<id>module-extensions</id>
+			<activation>
+				<property>
+					<name>module-extensions</name>
+				</property>
+			</activation>
+			<modules>
+				<module>extensions</module>
+			</modules>
+		</profile>
+
+		<profile>
+			<id>module-ext-secman</id>
+			<activation>
+				<property>
+					<name>module-secman</name>
+				</property>
+			</activation>
+			<modules>
+				<module>extensions/security/secman</module>
+			</modules>
+		</profile>
+
+		<profile>
+			<id>module-incubator-all</id>
+			<activation>
+				<property>
+					<name>module-incubator-all</name>
+				</property>
+			</activation>
+			<modules>
+				<module>incubator/extensions/core/commandreplay</module>
+			</modules>
+		</profile>
+
+		<profile>
+			<id>module-incubator-commandreplay</id>
+			<activation>
+				<property>
+					<name>module-incubator-commandreplay</name>
+				</property>
+			</activation>
+			<modules>
+				<module>incubator/extensions/core/commandreplay</module>
+			</modules>
+		</profile>
+
+		<profile>
+			<id>module-regressiontests</id>
+			<activation>
+				<property>
+					<name>module-regressiontests</name>
+				</property>
+			</activation>
+			<modules>
+				<module>regressiontests</module>
+			</modules>
+		</profile>
+
+		<profile>
+			<id>causeway-app-starter-surefire</id>
+			<activation>
+				<property>
+					<name>!skip.causeway-app-starter-surefire</name>
+				</property>
+			</activation>
+
+			<properties>
+				<!-- uses maven-surefire-plugin.version, which is declared by spring-boot-starter-parent -->
+				<skipTests>false</skipTests>
+				<skipUTs>${skipTests}</skipUTs>
+				<skipITs>${skipTests}</skipITs>
+				<skipBDDs>${skipTests}</skipBDDs>
+				<surefire-plugin.argLine></surefire-plugin.argLine>
+			</properties>
+
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-surefire-plugin</artifactId>
+							<version>${maven-surefire-plugin.version}</version>
+							<executions>
+								<execution>
+									<id>default-test</id>
+									<phase>test</phase>
+									<goals>
+										<goal>test</goal>
+									</goals>
+									<configuration>
+										<skipTests>${skipUTs}</skipTests>
+										<includes>
+											<include>**/*Test*.java</include>
+										</includes>
+										<excludes>
+											<exclude>**/*Testing.java</exclude>
+											<exclude>**/*IntegTest*.java</exclude>
+											<exclude>**/*Abstract*.java</exclude>
+										</excludes>
+										<useFile>true</useFile>
+										<printSummary>true</printSummary>
+										<reportsDirectory>${project.build.directory}/surefire-unittest-reports</reportsDirectory>
+										<forkCount>1</forkCount>
+										<reuseForks>true</reuseForks>
+										<argLine>${surefire-plugin.argLine}</argLine>
+									</configuration>
+								</execution>
+								<execution>
+									<id>integ-test</id>
+									<phase>integration-test</phase>
+									<goals>
+										<goal>test</goal>
+									</goals>
+									<configuration>
+										<skipTests>${skipITs}</skipTests>
+										<includes>
+											<include>**/*IntegTest*.java</include>
+										</includes>
+										<excludes>
+											<exclude>**/*Abstract*.java</exclude>
+										</excludes>
+										<useFile>true</useFile>
+										<printSummary>true</printSummary>
+										<reportsDirectory>${project.build.directory}/surefire-integtest-reports</reportsDirectory>
+										<forkCount>1</forkCount>
+										<reuseForks>true</reuseForks>
+										<argLine>${surefire-plugin.argLine}</argLine>
+									</configuration>
+								</execution>
+								<execution>
+									<id>bdd-specs</id>
+									<phase>integration-test</phase>
+									<goals>
+										<goal>test</goal>
+									</goals>
+									<configuration>
+										<skipTests>${skipBDDs}</skipTests>
+										<includes>
+											<include>**/*Spec*.java</include>
+										</includes>
+										<excludes>
+											<exclude>**/*Test.java</exclude>
+											<exclude>**/*Testing.java</exclude>
+											<exclude>**/*IntegTest*.java</exclude>
+											<exclude>**/*Abstract*.java</exclude>
+										</excludes>
+										<useFile>true</useFile>
+										<printSummary>true</printSummary>
+										<reportsDirectory>${project.build.directory}/surefire-bddspecs-reports</reportsDirectory>
+										<forkCount>1</forkCount>
+										<reuseForks>true</reuseForks>
+										<argLine>${surefire-plugin.argLine}</argLine>
+									</configuration>
+								</execution>
+							</executions>
+						</plugin>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-surefire-report-plugin</artifactId>
+							<version>${maven-surefire-report-plugin.version}</version>
+							<configuration>
+								<showSuccess>false</showSuccess>
+							</configuration>
+							<executions>
+								<execution>
+									<id>test</id>
+									<phase>test</phase>
+								</execution>
+								<execution>
+									<id>integration-test</id>
+									<phase>integration-test</phase>
+								</execution>
+								<execution>
+									<id>bdd-specs</id>
+									<phase>integration-test</phase>
+								</execution>
+							</executions>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
+
+		<profile>
+			<id>causeway-app-starter-docker</id>
+			<activation>
+				<property>
+					<name>!skip.causeway-app-starter-docker</name>
+				</property>
+			</activation>
+			<properties>
+				<jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
+			</properties>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>com.google.cloud.tools</groupId>
+							<artifactId>jib-maven-plugin</artifactId>
+							<version>${jib-maven-plugin.version}</version>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
+
+		<!-- running: mvn spring-boot:run -->
+		<profile>
+			<id>causeway-app-starter-boot</id>
+			<activation>
+				<property>
+					<name>!skip.causeway-app-starter-boot</name>
+				</property>
+			</activation>
+			<properties>
+			</properties>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>org.springframework.boot</groupId>
+							<artifactId>spring-boot-maven-plugin</artifactId>
+							<version>${spring-boot.version}</version>
+							<executions>
+								<execution>
+									<goals>
+										<goal>repackage</goal>
+									</goals>
+								</execution>
+							</executions>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
+
+		<profile>
+			<id>apache-release</id>
+			<activation>
+				<property>
+					<name>apache-release</name>
+				</property>
+			</activation>
+			<properties>
+				<skipTests>true</skipTests>
+				<altDeploymentRepository>apache.releases.https::default::https://repository.apache.org/service/local/staging/deploy/maven2</altDeploymentRepository>
+			</properties>
+			<build>
+				<plugins>
+					<!-- We want to sign the artifact, the POM, and all attached artifacts -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>3.2.7</version>
+						<executions>
+							<execution>
+								<id>sign-release-artifacts</id>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<gpgArguments>
+								<arg>--digest-algo=SHA512</arg>
+							</gpgArguments>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>net.nicoulaj.maven.plugins</groupId>
+						<artifactId>checksum-maven-plugin</artifactId>
+						<version>1.11</version>
+						<executions>
+							<execution>
+								<id>source-release-checksum</id>
+								<goals>
+									<goal>files</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<algorithms>
+								<algorithm>SHA-512</algorithm>
+							</algorithms>
+							<csvSummary>false</csvSummary>
+							<fileSets>
+								<fileSet>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>${project.artifactId}-${project.version}-source-release.zip</include>
+										<include>${project.artifactId}-${project.version}-source-release.tar*</include>
+									</includes>
+								</fileSet>
+							</fileSets>
+							<failIfNoFiles>false</failIfNoFiles><!-- usually, no file to do checksum:
+								don't consider error -->
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>github</id>
+			<activation>
+				<property>
+					<name>github</name>
+				</property>
+			</activation>
+			<distributionManagement>
+				<repository>
+					<id>github</id>
+					<name>Github Releases</name>
+					<url>https://maven.pkg.github.com/apache/causeway</url>
+				</repository>
+			</distributionManagement>
+		</profile>
+
+		<profile>
+			<id>nightly-localfs-repo</id>
+			<activation>
+				<property>
+					<name>nightly-localfs-repo</name>
+				</property>
+			</activation>
+			<distributionManagement>
+				<repository>
+					<id>nightly-localfs-repo</id>
+					<name>Temporary Local Filesystem Staging Repository</name>
+					<url>file://${MVN_SNAPSHOTS_PATH}</url>
+				</repository>
+			</distributionManagement>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-deploy-plugin</artifactId>
+						<version>3.1.3</version>
+						<configuration>
+							<altDeploymentRepository>
+								nightly-localfs-repo::file://${MVN_SNAPSHOTS_PATH}
+							</altDeploymentRepository>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+	</profiles>
+
+</project>

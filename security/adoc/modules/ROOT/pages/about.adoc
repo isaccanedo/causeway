@@ -1,0 +1,101 @@
+= Security
+
+:Notice: Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the NOTICE file distributed with this work for additional information regarding copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at. http://www.apache.org/licenses/LICENSE-2.0 . Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR  CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+:page-partial:
+
+
+This guide describes how to secure your Apache Causeway application by configuring an appropriate implementation of its authentication and authorization SPIs.
+
+
+== Security Architecture
+
+Apache Causeway defines an SPI for both authentication and authorization:
+
+* By "authentication" we mean logging into the application using some credentials, typically a username and password.
+Authentication also means looking up the set of roles to which a user belongs.
++
+The framework allows for different authentication mechanisms through the xref:refguide:core:index/security/authentication/Authenticator.adoc[Authenticator] SPI.
+.
+
+* By "authorization" we mean permissions: granting roles to have access to features (domain object members) of the app, and granting users to those roles.
++
+The framework allows for different authorization mechanisms through the xref:refguide:core:index/security/authorization/Authorizor.adoc[Authorizor] SPI.
+
+
+There are several implementations of these SPIs to choose from; these make up the bulk of this guide.
+
+include::security:bypass:partial$module-nav.adoc[]
+include::security:simple:partial$module-nav.adoc[]
+include::security:shiro:partial$module-nav.adoc[]
+include::security:keycloak:partial$module-nav.adoc[]
+include::security:spring:partial$module-nav.adoc[]
+
+
+In addition to the security SPI implementations, there are a number of security-related extensions:
+
+* The xref:security:spring-oauth2:about.adoc[Spring OAuth2] extension configures the xref:security:spring:about.adoc[Spring authenticator] for OAuth2 stores (eg gmail, facebook)
+* The xref:security:secman:about.adoc[SecMan extension] provides both an authenticator and an authorizor from domain entities (users, roles and permission entities) using either xref:pjpa:ROOT:about.adoc[JPA] or xref:pjdo:ROOT:about.adoc[JDO].
++
+As these users, roles and permissions are domain objects, they can be administered through Apache Causeway itself.
+
+Note that authenticators and authorizor components can be mixed.
+For example, the Keycloak or Spring OAuth2 authenticator can be used with Secman for authorization.
+
+
+The most significant of these is probably xref:security:secman:about.adoc[SecMan], which uses a
+
+
+== Permissions
+
+The xref:refguide:core:index/security/authorization/Authorizor.adoc[Authorizor] SPI defines two types of permissions:
+
+* _Read_ permission means that the user can view the object member; it will be rendered in the UI.
++
+An action with only read permission will be shown disabled ("greyed out"); a property with read-only permission cannot be edited.
+
+* _Write_ permission means that the object member can be changed.
++
+For actions this means that they can be invoked.
+
+If there is neither _read_ nor _write_ permissions then the feature will be invisible to the user.
+
+
+== Auditing
+
+A further aspect of security is auditing: recording what data was modified by which user.
+
+Apache Causeway provides the xref:refguide:applib:index/services/iactnlayer/InteractionContext.adoc[InteractionContext] can be used to track the actions being invoked, and the xref:refguide:applib:index/services/publishing/spi/EntityPropertyChangeSubscriber.adoc[EntityPropertyChangeSubscriber] captures what data was modified as a result (auditing).
+When xref:refguide:applib:index/services/iactn/Interaction.adoc[Interaction]s are persisted (eg by way of the xref:userguide:executionlog:about.adoc[Execution Log] extension) then this provides excellent traceability.
+The xref:security:audittrail:about.adoc[Audit Trail] module provides an implementation of the xref:refguide:applib:index/services/publishing/spi/EntityPropertyChangeSubscriber.adoc[EntityPropertyChangeSubscriber] that persists audit entries to the database.
+
+For xref:refguide:applib:index/services/publishing/spi/CommandSubscriber.adoc[CommandSubscriber] SPI can be also be used to capture actions.
+The xref:userguide:commandlog:about.adoc[Command Log] extension provides a simple implementation of this SPI.
+
+
+== Programmers' API
+
+Generally speaking your domain objects (or more generally your application) should be agnostic of the user/roles that are interacting with them; applying security permissions is the responsibility of the framework.
+
+If you need to determine the identity of the current user, you can usually use Apache Causeway' xref:refguide:applib:index/services/user/UserService.adoc[UserService] API, in the form of  xref:refguide:applib:index/services/user/UserMemento.adoc[UserMemento].
+
+For example:
+
+[source,java]
+----
+final UserMemento user = userService.getUser();
+final List<RoleMemento> roles = user.getRoles();
+for (RoleMemento role : roles) {
+    String roleName = role.getName();
+    ...
+}
+----
+
+Each role's `name` property encodes both the realm that provided the role, and the role identity itself.
+
+If using the xref:vw::about.adoc[Wicket viewer], then note there will also be another role which is used internally (namely `org.apache.causeway.viewer.wicket.roles.USER`).
+
+
+
+
+
+

@@ -1,0 +1,18 @@
+// Common settings for Asciidoctor.
+// Used for rendering the preview when using the AsciiDoc IntelliJ plugin
+// for more information see:
+// https://github.com/asciidoctor/asciidoctor-intellij-plugin/wiki/Support-project-specific-configurations
+:experimental:
+:idprefix:
+:idseparator: -
+// antora only builds interactive diagrams when mode is [interactive] (as defined in the playbook)
+// the asciidoctor-intellij-plugin will only preview interactive links if mode is [inline]
+// see discussion here https://github.com/asciidoctor/asciidoctor-intellij-plugin/issues/548
+:kroki-default-options: inline
+
+// :linkcss:
+// :stylesdir: {asciidoctorconfigdir}/antora/.asciidoctor-styles
+// :stylesheet: asciidoc-classic.css
+// :stylesdir: https://raw.githubusercontent.com/darshandsoni/asciidoctor-skins/gh-pages/css
+// :stylesheet: asciidoc-classic.css
+

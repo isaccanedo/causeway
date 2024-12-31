@@ -1,0 +1,56 @@
+{
+  rich {
+    Scenario(name: "Find department and change its name"){
+      Name
+      Given {
+        university_dept_Departments {
+          findDepartmentByName {
+            invoke(name: "Classics") {
+              args {
+                name
+              }
+              results {
+                _meta {
+                  saveAs(ref: "dept#1")
+                }
+              }
+            }
+          }
+        }
+      }
+
+      When {
+        university_dept_Department(object: {ref: "dept#1"}) {
+          name {
+            get
+          }
+          changeName {
+            invokeIdempotent(newName: "Ancient History") {
+              target {
+                name {
+                  get
+                }
+              }
+              args {
+                newName
+              }
+              results {
+                name {
+                  get
+                }
+              }
+            }
+          }
+        }
+      }
+
+      Then {
+        university_dept_Department(object: {ref: "dept#1"}) {
+          name {
+            get
+          }
+        }
+      }
+    }
+  }
+}
